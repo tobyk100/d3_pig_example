@@ -69,3 +69,10 @@ barplot(t(c(blog_only_stats$failure_rate,
         main = "Failure Rate by User Type",
         ylab = "Failure Rate %",
         xlab = "User Type")
+
+#Get the timestamps for failures. Currently missing sub-second values
+use <- events$event == 'save Failure'
+failure_times <- strptime(events[use, 1], format="%Y-%d-%mT%H:%M:%S")
+bins_by_hour <- cut(failure_times,
+                    breaks=seq(as.POSIXct('2013-04-09 13:00:00'),
+                               by='1 hour', length=10))
