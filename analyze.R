@@ -2,11 +2,14 @@ events <- read.csv(file='events.csv', header=TRUE)
 premium_users <- read.csv(file='premium.csv', header=TRUE)
 premium_users <- premium_users$user.id
 
-filter_events_by_type <- function(type) {
-  use <- events$event == type
-  users <- unique(events[use, 2])
-  rm(use)
-  return(users)
+filter_events_by_type <- function(type, column = 2, unique = T) {
+  is_event_type <- events$event == type
+  filtered_events = events[is_event_type, column]
+  if(unique) {
+    return(unique(filtered_events))
+  }
+
+  return(filtered_events)
 }
 
 users_with_failure = filter_events_by_type('save Failure')
@@ -38,41 +41,42 @@ ecomm_only_stats = user_stats(ecomm_only_users)
 blog_and_ecomm_stats = user_stats(blog_and_ecomm_users)
 vanilla_stats = user_stats(vanilla_users)
 
+visual <- F
 # Conversion Rates
-#TODO(toby): top bar goes off scale, add colors, increase label font size
-graph_barplot_of_field <- function(field) {
+if (visual) {
+  barplot(t(c(blog_only_stats$conversion_rate,
+              ecomm_only_stats$conversion_rate,
+              blog_and_ecomm_stats$conversion_rate,
+              vanilla_stats$conversion_rate)),
+          names = c("Blog Only",
+                    "Ecomm Only",
+                    "Blog and Ecomm",
+                    "Vanilla"),
+          main = "Conversion Rate by User Type",
+          ylab = "Conversion Rate %",
+          xlab = "User Type")
+  dev.new()
+  premium_user_failure_rate = length(intersect(users_with_failure, premium_users)) / length(premium_users)  # 0.0
+  barplot(t(c(blog_only_stats$failure_rate,
+              ecomm_only_stats$failure_rate,
+              blog_and_ecomm_stats$failure_rate,
+              vanilla_stats$failure_rate,
+              premium_user_failure_rate)),
+          names = c("Blog Only",
+                    "Ecomm Only",
+                    "Blog and Ecomm",
+                    "Vanilla",
+                    "Premium"),
+          main = "Failure Rate by User Type",
+          ylab = "Failure Rate %",
+          xlab = "User Type")
 }
-
-barplot(t(c(blog_only_stats$conversion_rate,
-            ecomm_only_stats$conversion_rate,
-            blog_and_ecomm_stats$conversion_rate,
-            vanilla_stats$conversion_rate)),
-        names = c("Blog Only",
-                  "Ecomm Only",
-                  "Blog and Ecomm",
-                  "Vanilla"),
-        main = "Conversion Rate by User Type",
-        ylab = "Conversion Rate %",
-        xlab = "User Type")
-dev.new()
-premium_user_failure_rate = length(intersect(users_with_failure, premium_users)) / length(premium_users)  # 0.0
-barplot(t(c(blog_only_stats$failure_rate,
-            ecomm_only_stats$failure_rate,
-            blog_and_ecomm_stats$failure_rate,
-            vanilla_stats$failure_rate,
-            premium_user_failure_rate)),
-        names = c("Blog Only",
-                  "Ecomm Only",
-                  "Blog and Ecomm",
-                  "Vanilla",
-                  "Premium"),
-        main = "Failure Rate by User Type",
-        ylab = "Failure Rate %",
-        xlab = "User Type")
 
 #Get the timestamps for failures. Currently missing sub-second values
 use <- events$event == 'save Failure'
-failure_times <- strptime(events[use, 1], format="%Y-%d-%mT%H:%M:%S")
+failures = filter_events_by_type('save Failure', column = 1, unique = F)
+failure_times <- strptime(failures, format="%Y-%d-%mT%H:%M:%S")
 bins_by_hour <- cut(failure_times,
                     breaks=seq(as.POSIXct('2013-04-09 13:00:00'),
-                               by='1 hour', length=10))
+                               by='1 hour',
+                               length=10))
