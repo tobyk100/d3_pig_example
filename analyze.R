@@ -39,4 +39,20 @@ bins_by_quarter_hour <- cut(failure_times,
                             breaks=seq(from=min(failure_times),
                                to=max(failure_times),
                                by=as.difftime(c("15"), format="%M")))
+show_trend_by_hours <- function(h=1){
+    tdiff <- as.difftime(c(h), units="hours")
+    bins <- cut(failure_times,
+                breaks=seq(from=min(failure_times),
+                           to=max(failure_times),
+                           by=tdiff))
+    barplot(table(bins))
+}
 
+show_trend_by_minutes <- function(m=15){
+    tdiff <- as.difftime(c(m), units="mins")
+    bins <- cut(failure_times,
+                breaks=seq(from=min(failure_times),
+                           to=max(failure_times),
+                           by=tdiff))
+    barplot(table(bins))
+}
