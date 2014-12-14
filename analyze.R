@@ -26,3 +26,10 @@ vanilla_premium_users <- intersect(vanilla_users, premium_users)
 blog_premium_users <- intersect(blog_users, premium_users)
 ecomm_premium_users <- intersect(ecomm_users, premium_users)
 blog_and_ecomm_premium_users <- intersect(blog_and_ecomm_users, premium_users)
+
+#Get the timestamps for failures. Currently missing sub-second values
+use <- events$event == 'save Failure'
+failure_times <- strptime(events[use, 1], format="%Y-%d-%mT%H:%M:%S")
+bins_by_hour <- cut(failure_times,
+                    breaks=seq(as.POSIXct('2013-04-09 13:00:00'),
+                               by='1 hour', length=10))
