@@ -74,7 +74,7 @@ if (visual) {
 
 #Get the timestamps for failures. Currently missing sub-second values
 use <- events$event == 'save Failure'
-failures = filter_events_by_type('save Failure', column = 1, unique = F)
+failures <- filter_events_by_type('save Failure', column = 1, unique = F)
 failure_times <- strptime(failures, format="%Y-%d-%mT%H:%M:%S")
 bins_by_hour <- cut(failure_times,
                     breaks=seq(as.POSIXct('2013-04-09 13:00:00'),
